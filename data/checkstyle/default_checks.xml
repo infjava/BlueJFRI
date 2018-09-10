@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.1//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_1.dtd">
+
+<module name="Checker">
+    <!-- súbory nesmú obsahovať tabulátory na odsadzanie -->
+    <module name="FileTabCharacter"/>
+
+    <module name="TreeWalker">
+        <!-- KONVENCIE -->
+        
+        <!-- konštanty dodržiavajú veľkú podtržítkovú notáciu -->
+        <module name="ConstantName"/>
+        
+        <!-- lokálne premenné dodržiavajú small cammel case -->
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName"/>
+        <module name="ParameterName"/>
+        
+        <!-- názvy členov triedy (atribútov a metód) dodržiavajú small cammel case -->
+        <module name="MemberName"/>
+        <module name="MethodName"/>
+        <module name="StaticVariableName"/>
+        
+        <!-- názvy balíčkov dodržiavajú small cammel case -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*([.][a-z][a-zA-Z0-9]*)*$"/>
+        </module>
+        
+        <!-- názvy tried dodržiavajú big cammel case -->
+        <module name="TypeName">
+            <property name="tokens" value="CLASS_DEF"/>
+        </module>
+        
+        <!-- názvy interface dodržiavajú big cammel case s prefixom I -->
+        <module name="TypeName">
+            <property name="format" value="^I[A-Z][a-zA-Z0-9]*$"/>
+            <property name="tokens" value="INTERFACE_DEF"/>
+        </module>
+        
+        <module name="AbstractClassName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+            <property name="ignoreModifier" value="true"/>
+        </module>
+        
+        <!-- názvy typových parametrov sú veľké jednopísmenkové -->
+        <module name="ClassTypeParameterName"/>
+        <module name="MethodTypeParameterName"/>
+        
+        <!-- explicitné uvádzanie this ako adresáta správy a pri prístupe ku atribútom -->
+        <module name="RequireThis" />
+        
+
+        <!-- IMPORTY -->
+        
+        <!-- zákaz importovania z hviedičkou -->
+        <module name="AvoidStarImport">
+            <property name="excludes" value="org.junit.Assert" />
+        </module>
+        
+        <!-- zákaz importovania neštandardných balíčkov (napr. balíček sun.*) -->
+        <module name="IllegalImport"/>
+        
+        <!-- kontrola nevyužívaných importov -->
+        <module name="UnusedImports"/>
+
+
+        <!-- FORMÁTOVANIE -->
+        
+        <!-- odsadzovanie na 4 medzery -->
+        <module name="Indentation" />
+        
+        <!-- za unárnymi operátormi a operátorom bodka sa nedáva medzera -->
+        <module name="NoWhitespaceAfter">
+            <property name="tokens" value="BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS,TYPECAST"/>
+            <property name="allowLineBreaks" value="false"/>
+        </module>
+        
+        <!-- pred bodkou sa nedáva medzera; zalomenie riadku je ale povolené -->
+        <module name="NoWhitespaceBefore">
+            <property name="tokens" value="DOT"/>
+            <property name="allowLineBreaks" value="true"/>
+        </module>
+        
+        <!-- pred postfixovými operátormi inkrementácie a dekrementácie sa nedáva medzera -->
+        <module name="NoWhitespaceBefore">
+            <property name="tokens" value="POST_DEC,POST_INC"/>
+        </module>
+        
+        <!-- za čiarkou a operátorom pretypovania nasleduje medzera -->
+        <module name="WhitespaceAfter">
+            <property name="tokens" value="COMMA"/>
+        </module>
+        
+        <!-- okolo binárnych operátorov sa píše medzera -->
+        <module name="WhitespaceAround" />
+        
+        <!-- na jednom riadku môže byť definícia len jednej premennej -->
+        <module name="MultipleVariableDeclarations"/>
+        
+        <!-- na jednom riadku môže byť len jeden príkaz -->
+        <module name="OneStatementPerLine"/>
+        
+        <!-- default je v switch poslednou vetvou -->
+        <module name="DefaultComesLast"/>
+
+
+        <!-- MODIFIKÁTORY -->
+        
+        <!-- kontrola poradia modifikátorov v definícii (musí byť podľa: public/protected/private, abstract, static, final, transient, volatile, synchronized, native, strictfp) -->
+        <module name="ModifierOrder"/>
+        
+        <!-- kontrola redundantných modifikátorov (public správy v interface, final metódy vo final triede a static vnorený interface) -->
+        <module name="RedundantModifier"/>
+
+
+        <!-- BLOKY -->
+    
+        <!-- blok musí byť ako súčasť štruktúrovaného príkazu (if, for, ...); výnimkou sú switch-case, ktoré môžu obsahovať blok -->
+        <module name="AvoidNestedBlocks">
+            <property name="allowInSwitchCase" value="true"/>
+        </module>
+    
+        <!-- kód nemá obsahovať prázdne bloky, výnimkou je catch -->
+        <module name="EmptyBlock">
+            <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_IF, LITERAL_FOR, LITERAL_TRY, LITERAL_WHILE, INSTANCE_INIT, STATIC_INIT, LITERAL_SWITCH, LITERAL_SYNCHRONIZED"/>
+        </module>
+        
+        <!-- otváracia kučeravá zátvorka vždy začína na konci riadku -->
+        <module name="LeftCurly" />
+        
+        <!-- zatváracia kučeravá zátvorka vždy začína na samostatnom riadku, môže pokračovať príkazom (else, while, catch, ...) -->
+        <module name="RightCurly" />
+        
+        <!-- štruktúrovaný príkaz musí vždy obsahovať blok -->
+        <module name="NeedBraces" />
+
+        
+        <!-- KVALITA KÓDU -->
+        
+        <!-- prázdny príkaz -->
+        <module name="EmptyStatement"/>
+        
+        <!-- v logickom výraze sa zbytočne pracuje s literálmi true/false (napr. "if (a == true)" miesto "if (a)") -->
+        <module name="SimplifyBooleanExpression"/>
+        
+        <!-- "if (vyraz) return true; else return false;" sa dá nahradiť za "return vyraz;" -->
+        <module name="SimplifyBooleanReturn"/>
+
+
+        <!-- CHYBY -->
+        
+        <!-- kontrola skrývania atribútov lokálnymi premennými; ignoruje parametre konštruktora -->
+        <module name="HiddenField">
+            <property name="tokens" value="VARIABLE_DEF"/>
+        </module>
+        
+        <!-- zákaz využívania vnoreného priraďovacieho výrazu  -->
+        <module name="InnerAssignment"/>
+        
+        <!-- vynútiť javový štýl polí (zakázať Cčkový) -->
+        <module name="ArrayTypeStyle"/>
+        
+        <!-- porovnávanie reťazcov pomocou == -->
+        <module name="StringLiteralEquality"/>
+        
+        <!-- každý case musí končiť príkazom break alebo return; dá sa potlačiť v kóde explicitným uvedením komentára "fallthrough" na koniec konkrétneho case -->
+        <module name="FallThrough"/>
+        
+        <!-- interface nie je určený na definíciu konštánt -->
+        <module name="InterfaceIsType">
+            <property name="allowMarkerInterfaces" value="true"/>
+        </module>
+        
+        <!-- atribúty, ktoré nie sú static final, musia byť private -->
+        <module name="VisibilityModifier"/>
+        
+        <!-- riadiaca premenná for cyklu sa nesmie meniť v tele cyklu -->
+        <module name="ModifiedControlVariable"/>
+        
+        <!-- výnimky majú byť nemeniteľné objekty -->
+        <module name="MutableException"/>
+    </module>
+</module>

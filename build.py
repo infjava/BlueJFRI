@@ -68,20 +68,25 @@ print('=== copying original template READMEs')
 copy_bluej_file('src/bluej/lib/english/templates/README')
 copy_bluej_file('src/bluej/lib/english/templates/newclass/README')
 
-print('=== copy libraries')
+print('=== copying checkstyle extension')
+os.mkdir('dst/bluej/lib/extensions')
+shutil.copyfile('data/checkstyle/default_checks.xml', 'dst/bluej/lib/extensions/default_checks.xml')
+shutil.copyfile('src/checkstyle-extension-5.4-0.jar', 'dst/bluej/lib/extensions/checkstyle-extension-5.4-0.jar')
+
+print('=== copying libraries')
 for file in glob.glob('src/bluej/lib/*'):
     if not os.path.isdir(file):
         copy_bluej_file(file)
 
-print('=== copy project README and licences')
+print('=== copying project README and licences')
 copy_bluej_file('src/bluej/README.TXT')
 copy_bluej_file('src/bluej/LICENSE.txt')
 copy_bluej_file('src/bluej/THIRDPARTYLICENSE.txt')
 
-print('=== copy BlueJ.exe')
+print('=== copying BlueJ.exe')
 copy_bluej_file('src/bluej/BlueJ.exe')
 
-print('=== copy setup.iss config and modify it')
+print('=== copying setup.iss config and modifying it')
 with open('data/setup.iss', 'r') as src:
     with open('dst/setup.iss', 'w') as dst:
         dst.write(src.read().replace('###VER###', version))
