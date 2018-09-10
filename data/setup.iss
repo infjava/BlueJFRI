@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "BlueJ FRI Edition"
-#define MyAppVersion "3.1.5"
+#define MyAppVersion "###VER###"
 #define MyAppPublisher "BlueJ Team; Fakulta riadenia a informatiky, Zilinska univerzita v Ziline"
 #define MyAppURL "http://fri.uniza.sk/"
 #define MyAppExeName "BlueJ.exe"
