@@ -1,0 +1,6 @@
+dst/*
+!dst/.keep
+!dst/setup.iss
+src/*
+!src/.keep
+**/__pycache__
