@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName=BlueJ FRI
 AllowNoIcons=yes
-LicenseFile=bin\LICENSE.txt
+LicenseFile=bluej\LICENSE.txt
 OutputBaseFilename=BlueJFRI-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
@@ -37,12 +37,12 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Name: "associations"; Description: "Create file association (*.bluej)"; GroupDescription: "File associations"; MinVersion: 4,4
 
 [Files]
-Source: "bin\BlueJ.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bin\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bin\README.TXT"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bin\THIRDPARTYLICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bin\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "bin\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "bluej\BlueJ.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bluej\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bluej\README.TXT"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bluej\THIRDPARTYLICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bluej\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "bluej\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
