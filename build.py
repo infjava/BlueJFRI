@@ -13,7 +13,10 @@ def copy_bluej_file(path):
 def copy_bluej_tree(path):
     shutil.copytree(path, 'dst' + path[3:])
 
-if not os.path.exists('src/bluej/BlueJ.exe'):
+win_version_exists = os.path.exists('src/bluej/BlueJ.exe')
+other_version_exists = os.path.exists('src/bluej/bluej')
+
+if not win_version_exists and not other_version_exists:
     print('ERROR: unpack bluej to the src/bluej directory')
     sys.exit(1)
 
@@ -84,7 +87,11 @@ copy_bluej_file('src/bluej/LICENSE.txt')
 copy_bluej_file('src/bluej/THIRDPARTYLICENSE.txt')
 
 print('=== copying BlueJ.exe')
-copy_bluej_file('src/bluej/BlueJ.exe')
+if win_version_exists:
+    copy_bluej_file('src/bluej/BlueJ.exe')
+else:
+    shutil.copyfile('data/unix/bluej', 'dst/bluej/bluej')
+    os.chmod('dst/bluej/bluej', 0o755)
 
 print('=== copying jdk')
 copy_bluej_tree('src/bluej/jdk')

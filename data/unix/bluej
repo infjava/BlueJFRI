@@ -1,0 +1,14 @@
+#!/bin/sh
+
+####
+SCRIPT="${BASH_SOURCE[0]}"
+while [ -h "$SCRIPT" ]; do
+    DIR="$(dirname "$SCRIPT")"
+    TARGET="$(readlink "$SCRIPT")"
+    SCRIPT="$(cd "$DIR"; realpath "$TARGET")"
+done
+APPBASE="$(realpath "$(dirname "$SCRIPT")")"
+####
+
+CP="$APPBASE/lib/bluej.jar:$JAVA_HOME/lib/tools.jar"
+"$JAVA_HOME/bin/java" -Dawt.useSystemAAFontSettings=on -cp "$CP" bluej.Boot  "$@"
