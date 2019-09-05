@@ -71,7 +71,7 @@ copy_bluej_file('src/bluej/lib/english/templates/newclass/README')
 print('=== copying checkstyle extension')
 os.mkdir('dst/bluej/lib/extensions')
 shutil.copyfile('data/checkstyle/default_checks.xml', 'dst/bluej/lib/extensions/default_checks.xml')
-shutil.copyfile('src/checkstyle-extension-5.4-0.jar', 'dst/bluej/lib/extensions/checkstyle-extension-5.4-0.jar')
+shutil.copyfile('src/checkstyle-extension-5.4.1.jar', 'dst/bluej/lib/extensions/checkstyle-extension-5.4.1.jar')
 
 print('=== copying libraries')
 for file in glob.glob('src/bluej/lib/*'):
@@ -85,6 +85,10 @@ copy_bluej_file('src/bluej/THIRDPARTYLICENSE.txt')
 
 print('=== copying BlueJ.exe')
 copy_bluej_file('src/bluej/BlueJ.exe')
+
+print('=== copying jdk')
+copy_bluej_tree('src/bluej/jdk')
+copy_bluej_tree('src/bluej/lib/javafx')
 
 print('=== copying setup.iss config and modifying it')
 with open('data/setup.iss', 'r') as src:
