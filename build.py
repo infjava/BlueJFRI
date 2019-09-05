@@ -93,9 +93,10 @@ else:
     shutil.copyfile('data/unix/bluej', 'dst/bluej/bluej')
     os.chmod('dst/bluej/bluej', 0o755)
 
-print('=== copying jdk')
-copy_bluej_tree('src/bluej/jdk')
-copy_bluej_tree('src/bluej/lib/javafx')
+if win_version_exists:
+    print('=== copying jdk')
+    copy_bluej_tree('src/bluej/jdk')
+    copy_bluej_tree('src/bluej/lib/javafx')
 
 print('=== copying setup.iss config and modifying it')
 with open('data/setup.iss', 'r') as src:
