@@ -27,6 +27,8 @@ OutputBaseFilename=BlueJFRI-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
+ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -37,17 +39,10 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Name: "associations"; Description: "Create file association (*.bluej)"; GroupDescription: "File associations"; MinVersion: 4,4
 
 [Files]
-Source: "bluej\BlueJ.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bluej\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bluej\README.TXT"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bluej\THIRDPARTYLICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bluej\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "bluej\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: "bluej\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\BlueJ"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\Select BlueJ VM"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/select"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\View README"; Filename: "{app}\README.TXT"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
