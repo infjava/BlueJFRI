@@ -49,7 +49,9 @@
         <module name="MethodTypeParameterName"/>
         
         <!-- explicitné uvádzanie this ako adresáta správy a pri prístupe ku atribútom -->
-        <module name="RequireThis" />
+        <module name="RequireThis">
+            <property name="validateOnlyOverlapping" value="false"/>
+        </module>
         
 
         <!-- IMPORTY -->
