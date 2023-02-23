@@ -29,15 +29,7 @@
         </module>
         
         <!-- názvy tried dodržiavajú big cammel case -->
-        <module name="TypeName">
-            <property name="tokens" value="CLASS_DEF"/>
-        </module>
-        
-        <!-- názvy interface dodržiavajú big cammel case s prefixom I -->
-        <module name="TypeName">
-            <property name="format" value="^I[A-Z][a-zA-Z0-9]*$"/>
-            <property name="tokens" value="INTERFACE_DEF"/>
-        </module>
+        <module name="TypeName" />
         
         <module name="AbstractClassName">
             <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
