@@ -12,6 +12,7 @@ PROPERTIES="$BLUEJ_USER_DIR/bluej.properties"
 STATE_FILE="$BLUEJ_USER_DIR/.bluejfri-extensions"
 BEGIN_MARKER="# BEGIN BLUEJ FRI MANAGED SETTINGS"
 END_MARKER="# END BLUEJ FRI MANAGED SETTINGS"
+CHECKSTYLE_CONFIG="$EXT_DIR/default_checks.xml"
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 command -v curl >/dev/null 2>&1 || fail "curl is required"
@@ -58,7 +59,7 @@ cp "$CLEAN_PROPERTIES" "$PROPERTIES"
 if [ -s "$PROPERTIES" ]; then printf '\n' >> "$PROPERTIES"; fi
 {
     echo "$BEGIN_MARKER"
-    cat "$PROPERTIES_SOURCE"
+    awk -v checkstyle_config="$CHECKSTYLE_CONFIG" '{ gsub(/__BLUEJFRI_CHECKSTYLE_CONFIG__/, checkstyle_config); print }' "$PROPERTIES_SOURCE"
     if [ -s "$PROPERTIES_SOURCE" ] && [ "$(tail -c 1 "$PROPERTIES_SOURCE" | wc -l | tr -d ' ')" -eq 0 ]; then printf '\n'; fi
     echo "$END_MARKER"
 } >> "$PROPERTIES"
@@ -70,20 +71,32 @@ if [ -f "$STATE_FILE" ]; then
     done < "$STATE_FILE"
 fi
 
-cp "$CHECKSTYLEDATA_SOURCE/*" "$EXT_SOURCE"
-
 NEW_STATE="$TMP_DIR/extensions.state"
 : > "$NEW_STATE"
 extension_count=0
-if [ -d "$EXT_SOURCE" ]; then
-    for source_file in "$EXT_SOURCE"/*; do
+
+install_extension_dir() {
+    source_dir="$1"
+    [ -d "$source_dir" ] || return 0
+
+    for source_file in "$source_dir"/*; do
         [ -f "$source_file" ] || continue
         name="$(basename "$source_file")"
+        if grep -Fxq "$name" "$NEW_STATE"; then
+            fail "Duplicate extension filename: $name"
+        fi
         cp -p "$source_file" "$EXT_DIR/$name"
         echo "$name" >> "$NEW_STATE"
         extension_count=$((extension_count + 1))
     done
-fi
+}
+
+# Regular extensions stored in data/extensions2.
+install_extension_dir "$EXT_SOURCE"
+
+# Checkstyle-related files stored separately in data/checkstyle are also
+# installed into BlueJ's user-level extensions2 directory on macOS.
+install_extension_dir "$CHECKSTYLEDATA_SOURCE"
 
 while IFS= read -r raw_url || [ -n "$raw_url" ]; do
     url="$(printf '%s' "$raw_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
@@ -110,4 +123,5 @@ echo "BlueJ FRI configuration installed successfully."
 echo "Extensions installed: $extension_count"
 echo "Configuration:        $PROPERTIES"
 echo "Extensions directory: $EXT_DIR"
+echo "Checkstyle config:     $CHECKSTYLE_CONFIG"
 echo; echo "Restart BlueJ if it is currently running."
