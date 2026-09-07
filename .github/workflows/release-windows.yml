@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       replace_existing_release:
-        description: Replace installer/checksum assets if this version already has a release
+        description: Replace installer/checksum assets if this FRI version already has a release
         required: true
         type: boolean
         default: false
@@ -25,15 +25,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Read release version
+      - name: Read versions
         id: version
         shell: pwsh
         run: |
-          $version = (Get-Content 'data/bluej-version.txt' -Raw).Trim()
-          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid version: '$version'" }
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "tag=BlueJFRI-$version" >> $env:GITHUB_OUTPUT
-          "installer=dst/output/BlueJFRI-$version.exe" >> $env:GITHUB_OUTPUT
+          $bluejVersion = (Get-Content 'data/bluej-version.txt' -Raw).Trim()
+          $friVersion = (Get-Content 'data/bluejfri-version.txt' -Raw).Trim()
+          if ($bluejVersion -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid BlueJ version: '$bluejVersion'" }
+          if ($friVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') { throw "Invalid BlueJ FRI version: '$friVersion'" }
+          if (-not $friVersion.StartsWith("$bluejVersion.")) { throw "BlueJ FRI version '$friVersion' must start with BlueJ version '$bluejVersion.'" }
+          "bluej_version=$bluejVersion" >> $env:GITHUB_OUTPUT
+          "version=$friVersion" >> $env:GITHUB_OUTPUT
+          "tag=BlueJFRI-$friVersion" >> $env:GITHUB_OUTPUT
+          "installer=dst/output/BlueJFRI-$friVersion.exe" >> $env:GITHUB_OUTPUT
       - name: Build BlueJ FRI tree
         run: python build.py --force-download
       - name: Install Inno Setup
@@ -84,7 +88,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create '${{ steps.version.outputs.tag }}' '${{ steps.version.outputs.installer }}' '${{ steps.checksum.outputs.file }}' --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title 'BlueJ FRI Edition ${{ steps.version.outputs.version }}' --generate-notes
+          gh release create '${{ steps.version.outputs.tag }}' '${{ steps.version.outputs.installer }}' '${{ steps.checksum.outputs.file }}' --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title 'BlueJ FRI Edition ${{ steps.version.outputs.version }} (BlueJ ${{ steps.version.outputs.bluej_version }})' --generate-notes
       - name: Replace assets in existing release
         if: steps.existing.outputs.exists == 'true' && inputs.replace_existing_release == true
         shell: pwsh
