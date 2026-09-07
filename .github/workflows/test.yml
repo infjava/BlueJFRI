@@ -1,0 +1,15 @@
+name: Test build tooling
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tooling:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Python build script
+        run: python3 -m py_compile build.py
+      - name: Check macOS installer syntax
+        run: bash -n install-macos.sh

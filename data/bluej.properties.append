@@ -1,0 +1,6 @@
+# Put FRI-specific per-user BlueJ properties below this comment.
+# These settings are installed on macOS into the managed BlueJ FRI block in
+# ~/Library/Preferences/org.bluej/bluej.properties.
+#
+extensions.no.ntnu.iir.bluej.extensions.linting.checkstyle.CheckstyleExtension.settings.Checkstyle.ConfigMap={"FRI"\:"lib\\\\extensions2\\\\default_checks.xml"}
+extensions.no.ntnu.iir.bluej.extensions.linting.checkstyle.CheckstyleExtension.settings.Checkstyle.DefaultConfig=FRI

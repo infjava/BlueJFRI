@@ -1,0 +1,94 @@
+name: Build and release Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      replace_existing_release:
+        description: Replace installer/checksum assets if this version already has a release
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bluejfri-windows-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read release version
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content 'data/bluej-version.txt' -Raw).Trim()
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid version: '$version'" }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=BlueJFRI-$version" >> $env:GITHUB_OUTPUT
+          "installer=dst/output/BlueJFRI-$version.exe" >> $env:GITHUB_OUTPUT
+      - name: Build BlueJ FRI tree
+        run: python build.py --force-download
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Compile Windows installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            $iscc = Get-ChildItem -Path "${env:ProgramFiles(x86)}" -Filter ISCC.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          }
+          if (-not $iscc) { throw 'ISCC.exe was not found.' }
+          & $iscc 'dst\setup.iss'
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed: $LASTEXITCODE" }
+          if (-not (Test-Path '${{ steps.version.outputs.installer }}')) { throw 'Expected installer was not created.' }
+      - name: Create SHA-256 checksum
+        id: checksum
+        shell: pwsh
+        run: |
+          $installer = '${{ steps.version.outputs.installer }}'
+          $file = 'dst/output/SHA256SUMS.txt'
+          $hash = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLowerInvariant()
+          "$hash  $(Split-Path $installer -Leaf)" | Set-Content -Encoding ascii $file
+          "file=$file" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlueJFRI-${{ steps.version.outputs.version }}-windows
+          path: |
+            ${{ steps.version.outputs.installer }}
+            ${{ steps.checksum.outputs.file }}
+      - name: Check existing release
+        id: existing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view '${{ steps.version.outputs.tag }}' --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) { 'exists=true' >> $env:GITHUB_OUTPUT } else { 'exists=false' >> $env:GITHUB_OUTPUT }
+          exit 0
+      - name: Refuse accidental overwrite
+        if: steps.existing.outputs.exists == 'true' && inputs.replace_existing_release != true
+        shell: pwsh
+        run: throw "Release ${{ steps.version.outputs.tag }} already exists."
+      - name: Create GitHub release
+        if: steps.existing.outputs.exists == 'false'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ steps.version.outputs.tag }}' '${{ steps.version.outputs.installer }}' '${{ steps.checksum.outputs.file }}' --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title 'BlueJ FRI Edition ${{ steps.version.outputs.version }}' --generate-notes
+      - name: Replace assets in existing release
+        if: steps.existing.outputs.exists == 'true' && inputs.replace_existing_release == true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload '${{ steps.version.outputs.tag }}' '${{ steps.version.outputs.installer }}' '${{ steps.checksum.outputs.file }}' --repo $env:GITHUB_REPOSITORY --clobber
