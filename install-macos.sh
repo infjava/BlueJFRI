@@ -70,20 +70,32 @@ if [ -f "$STATE_FILE" ]; then
     done < "$STATE_FILE"
 fi
 
-cp "$CHECKSTYLEDATA_SOURCE/*" "$EXT_SOURCE"
-
 NEW_STATE="$TMP_DIR/extensions.state"
 : > "$NEW_STATE"
 extension_count=0
-if [ -d "$EXT_SOURCE" ]; then
-    for source_file in "$EXT_SOURCE"/*; do
+
+install_extension_dir() {
+    source_dir="$1"
+    [ -d "$source_dir" ] || return 0
+
+    for source_file in "$source_dir"/*; do
         [ -f "$source_file" ] || continue
         name="$(basename "$source_file")"
+        if grep -Fxq "$name" "$NEW_STATE"; then
+            fail "Duplicate extension filename: $name"
+        fi
         cp -p "$source_file" "$EXT_DIR/$name"
         echo "$name" >> "$NEW_STATE"
         extension_count=$((extension_count + 1))
     done
-fi
+}
+
+# Regular extensions stored in data/extensions2.
+install_extension_dir "$EXT_SOURCE"
+
+# Checkstyle-related files stored separately in data/checkstyle are also
+# installed into BlueJ's user-level extensions2 directory on macOS.
+install_extension_dir "$CHECKSTYLEDATA_SOURCE"
 
 while IFS= read -r raw_url || [ -n "$raw_url" ]; do
     url="$(printf '%s' "$raw_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
