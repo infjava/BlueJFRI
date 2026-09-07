@@ -312,8 +312,13 @@ def main() -> None:
     print("=== overlaying repository extensions")
     overlay_directory(DATA / "extensions2", lib_dir / "extensions2")
 
+    print("=== copying checkstyle checks")
+    overlay_directory(DATA / "checkstyle", lib_dir / "checkstyle")
+
     external_count = install_external_extensions(lib_dir / "extensions2")
     print(f"=== downloaded {external_count} external extension(s)")
+
+    
 
     appended = append_bluej_defs(lib_dir / "bluej.defs")
     print(f"=== appended {appended} bluej.defs line(s)")

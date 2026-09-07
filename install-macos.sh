@@ -38,6 +38,7 @@ for candidate in "$EXTRACTED"/*/data; do
 done
 [ -n "$DATA_DIR" ] || fail "data/ directory was not found in the downloaded repository"
 EXT_SOURCE="$DATA_DIR/extensions2"
+CHECKSTYLEDATA_SOURCE="$DATA_DIR/checkstyle"
 PROPERTIES_SOURCE="$DATA_DIR/bluej.properties.append"
 EXTENSION_URLS_SOURCE="$DATA_DIR/extensions2.urls"
 [ -f "$PROPERTIES_SOURCE" ] || fail "Missing data/bluej.properties.append in the repository"
@@ -68,6 +69,8 @@ if [ -f "$STATE_FILE" ]; then
         rm -f "$EXT_DIR/$old_name"
     done < "$STATE_FILE"
 fi
+
+cp "$CHECKSTYLEDATA_SOURCE/*" "$EXT_SOURCE"
 
 NEW_STATE="$TMP_DIR/extensions.state"
 : > "$NEW_STATE"

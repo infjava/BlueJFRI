@@ -1,7 +1,7 @@
 #define MyAppName "BlueJ FRI Edition"
 #define MyAppVersion "###VER###"
 #define MyAppPublisher "BlueJ Team; Fakulta riadenia a informatiky, Zilinska univerzita v Ziline"
-#define MyAppURL "https://fri.uniza.sk/"
+#define MyAppURL "https://github.com/infjava"
 #define MyAppExeName "BlueJ.exe"
 
 [Setup]
