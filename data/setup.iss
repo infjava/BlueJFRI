@@ -32,11 +32,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "associations"; Description: "Create file association (*.bluej)"; GroupDescription: "File associations"
 
-[Dirs]
-; BlueJ stores per-user settings in %USERPROFILE%\bluej on Windows.
-; Create it immediately for the user running the installer.
-Name: "{userprofile}\bluej"
-
 [Files]
 Source: "bluej\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -46,6 +41,10 @@ Name: "{group}\View README"; Filename: "{app}\README.TXT"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
+; Create BlueJ's per-user settings directory for the interactive user, not the
+; elevated administrator account used by UAC. cmd expands %USERPROFILE% after
+; runasoriginaluser has switched back to the user who started Setup.
+Filename: "{cmd}"; Parameters: "/C if not exist ""%USERPROFILE%\bluej"" mkdir ""%USERPROFILE%\bluej"""; Flags: runhidden runasoriginaluser
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Registry]
