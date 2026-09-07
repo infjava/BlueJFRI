@@ -111,20 +111,43 @@ def safe_extract_zip(archive: Path, destination: Path) -> None:
         fail(f"Downloaded file is not a valid ZIP: {archive}: {exc}")
 
 
+def is_bluej_root(path: Path) -> bool:
+    """Return True when path looks like the root of a BlueJ distribution."""
+    return all(
+        marker.is_file()
+        for marker in (
+            path / "BlueJ.exe",
+            path / "lib" / "bluej.defs",
+            path / "lib" / "english" / "labels",
+            path / "LICENSE.txt",
+        )
+    )
+
+
 def find_bluej_root(extracted: Path) -> Path:
-    """Find the directory containing BlueJ.exe in the standalone archive."""
-    direct = extracted / "BlueJ.exe"
-    if direct.is_file():
+    """Find the actual BlueJ distribution root inside the standalone ZIP."""
+    if is_bluej_root(extracted):
         return extracted
 
-    candidates = [p.parent for p in extracted.rglob("BlueJ.exe")]
+    candidates: list[Path] = []
+    for executable in extracted.rglob("BlueJ.exe"):
+        candidate = executable.parent
+        if is_bluej_root(candidate):
+            candidates.append(candidate)
+
     if len(candidates) == 1:
+        print(f"=== BlueJ distribution root: {candidates[0].relative_to(extracted)}")
         return candidates[0]
+
     if not candidates:
-        fail("BlueJ.exe was not found in the downloaded standalone ZIP")
+        top_level = ", ".join(sorted(p.name for p in extracted.iterdir()))
+        fail(
+            "Could not find a complete BlueJ distribution in the downloaded ZIP. "
+            f"Top-level archive entries: {top_level}"
+        )
 
     display = ", ".join(str(p.relative_to(extracted)) for p in candidates[:5])
-    fail(f"Several BlueJ.exe files were found in the ZIP: {display}")
+    fail(f"Several complete BlueJ distributions were found in the ZIP: {display}")
 
 
 def validate_bluej_tree(bluej_root: Path, version: str) -> None:
@@ -317,8 +340,6 @@ def main() -> None:
 
     external_count = install_external_extensions(lib_dir / "extensions2")
     print(f"=== downloaded {external_count} external extension(s)")
-
-    
 
     appended = append_bluej_defs(lib_dir / "bluej.defs")
     print(f"=== appended {appended} bluej.defs line(s)")
