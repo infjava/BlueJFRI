@@ -40,7 +40,6 @@ done
 EXT_SOURCE="$DATA_DIR/extensions2"
 PROPERTIES_SOURCE="$DATA_DIR/bluej.properties.append"
 EXTENSION_URLS_SOURCE="$DATA_DIR/extensions2.urls"
-[ -d "$EXT_SOURCE" ] || fail "Missing data/extensions2 in the repository"
 [ -f "$PROPERTIES_SOURCE" ] || fail "Missing data/bluej.properties.append in the repository"
 [ -f "$EXTENSION_URLS_SOURCE" ] || fail "Missing data/extensions2.urls in the repository"
 
@@ -50,16 +49,10 @@ cp -p "$PROPERTIES" "$PROPERTIES.bluejfri-backup"
 
 begin_count="$(grep -Fxc "$BEGIN_MARKER" "$PROPERTIES" || true)"
 end_count="$(grep -Fxc "$END_MARKER" "$PROPERTIES" || true)"
-if [ "$begin_count" -ne "$end_count" ] || [ "$begin_count" -gt 1 ]; then
-    fail "bluej.properties contains an invalid BlueJ FRI managed block"
-fi
+if [ "$begin_count" -ne "$end_count" ] || [ "$begin_count" -gt 1 ]; then fail "bluej.properties contains an invalid BlueJ FRI managed block"; fi
 
 CLEAN_PROPERTIES="$TMP_DIR/bluej.properties.clean"
-awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
-    $0 == begin { managed = 1; next }
-    $0 == end && managed { managed = 0; next }
-    !managed { print }
-' "$PROPERTIES" > "$CLEAN_PROPERTIES"
+awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '$0 == begin { managed = 1; next } $0 == end && managed { managed = 0; next } !managed { print }' "$PROPERTIES" > "$CLEAN_PROPERTIES"
 cp "$CLEAN_PROPERTIES" "$PROPERTIES"
 if [ -s "$PROPERTIES" ]; then printf '\n' >> "$PROPERTIES"; fi
 {
@@ -79,13 +72,15 @@ fi
 NEW_STATE="$TMP_DIR/extensions.state"
 : > "$NEW_STATE"
 extension_count=0
-for source_file in "$EXT_SOURCE"/*; do
-    [ -f "$source_file" ] || continue
-    name="$(basename "$source_file")"
-    cp -p "$source_file" "$EXT_DIR/$name"
-    echo "$name" >> "$NEW_STATE"
-    extension_count=$((extension_count + 1))
-done
+if [ -d "$EXT_SOURCE" ]; then
+    for source_file in "$EXT_SOURCE"/*; do
+        [ -f "$source_file" ] || continue
+        name="$(basename "$source_file")"
+        cp -p "$source_file" "$EXT_DIR/$name"
+        echo "$name" >> "$NEW_STATE"
+        extension_count=$((extension_count + 1))
+    done
+fi
 
 while IFS= read -r raw_url || [ -n "$raw_url" ]; do
     url="$(printf '%s' "$raw_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
