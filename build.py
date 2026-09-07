@@ -46,6 +46,25 @@ def remove_non_english_languages(lib:Path)->list[str]:
     for item in sorted(lib.iterdir(),key=lambda p:p.name.lower()):
         if item.is_dir() and item.name.lower()!='english' and (item/'labels').is_file(): shutil.rmtree(item); removed.append(item.name)
     return removed
+def clean_language_defs(path:Path)->int:
+    lines=path.read_text(encoding='utf-8').splitlines()
+    out=[]; removed=0; english_written=False
+    for line in lines:
+        stripped=line.strip()
+        if stripped.startswith('bluej.language') and '=' in stripped:
+            key,value=stripped.split('=',1)
+            suffix=key.removeprefix('bluej.language')
+            if suffix.isdigit():
+                if value.startswith('english:') and not english_written:
+                    out.append('bluej.language1=english:English:eng'); english_written=True
+                else:
+                    removed+=1
+                continue
+        out.append(line)
+    if not english_written:
+        out.append('bluej.language1=english:English:eng')
+    path.write_text('\n'.join(out)+'\n',encoding='utf-8',newline='\n')
+    return removed
 def overlay_directory(src:Path,dst:Path)->None:
     if not src.exists(): return
     if not src.is_dir(): fail(f'Expected directory: {src}')
@@ -95,6 +114,7 @@ def main()->None:
     with tempfile.TemporaryDirectory(prefix='bluejfri-') as temp:
         extracted=Path(temp)/'extracted'; extracted.mkdir(); safe_extract_zip(archive,extracted); root=find_bluej_root(extracted); shutil.copytree(root,DST_BLUEJ)
     lib=DST_BLUEJ/'lib'; removed=remove_non_english_languages(lib); print(f'=== removed {len(removed)} non-English language packs')
+    removed_defs=clean_language_defs(lib/'bluej.defs'); print(f'=== removed {removed_defs} non-English language entries from bluej.defs')
     overlay_directory(DATA/'templates',lib/'english'/'templates'); overlay_directory(DATA/'extensions2',lib/'extensions2'); overlay_directory(DATA/'checkstyle',lib/'checkstyle')
     print(f'=== downloaded {install_external_extensions(lib/"extensions2")} external extension(s)'); print(f'=== appended {append_bluej_defs(lib/"bluej.defs")} bluej.defs line(s)')
     setup=generate_setup(fri_version); print(f'Build tree prepared successfully.\nInno Setup: {setup}\nExpected installer: {DST/"output"/f"BlueJFRI-{fri_version}.exe"}')
