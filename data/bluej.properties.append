@@ -4,3 +4,4 @@
 #
 extensions.no.ntnu.iir.bluej.extensions.linting.checkstyle.CheckstyleExtension.settings.Checkstyle.ConfigMap={"FRI"\:"__BLUEJFRI_CHECKSTYLE_CONFIG__"}
 extensions.no.ntnu.iir.bluej.extensions.linting.checkstyle.CheckstyleExtension.settings.Checkstyle.DefaultConfig=FRI
+bluej.language=english
