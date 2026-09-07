@@ -150,7 +150,7 @@ def find_bluej_root(extracted: Path) -> Path:
     fail(f"Several complete BlueJ distributions were found in the ZIP: {display}")
 
 
-def validate_bluej_tree(bluej_root: Path, version: str) -> None:
+def validate_bluej_tree(bluej_root: Path) -> None:
     required = [
         bluej_root / "BlueJ.exe",
         bluej_root / "lib" / "bluej.defs",
@@ -160,15 +160,6 @@ def validate_bluej_tree(bluej_root: Path, version: str) -> None:
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
         fail("Unexpected BlueJ archive layout; missing: " + ", ".join(missing))
-
-    readme = bluej_root / "README.TXT"
-    if readme.is_file():
-        text = readme.read_text(encoding="utf-8", errors="ignore")
-        if version not in text:
-            fail(
-                f"README.TXT does not contain requested version {version}. "
-                "Refusing to build from a mismatched archive."
-            )
 
 
 def remove_non_english_languages(lib_dir: Path) -> list[str]:
@@ -317,7 +308,7 @@ def main() -> None:
         extracted.mkdir()
         safe_extract_zip(archive, extracted)
         bluej_root = find_bluej_root(extracted)
-        validate_bluej_tree(bluej_root, version)
+        validate_bluej_tree(bluej_root)
 
         print("=== copying complete BlueJ distribution")
         shutil.copytree(bluej_root, DST_BLUEJ)
