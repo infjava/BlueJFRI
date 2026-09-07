@@ -32,6 +32,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "associations"; Description: "Create file association (*.bluej)"; GroupDescription: "File associations"
 
+[Dirs]
+; BlueJ stores per-user settings in %USERPROFILE%\bluej on Windows.
+; Create it immediately for the user running the installer.
+Name: "{userprofile}\bluej"
+
 [Files]
 Source: "bluej\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -48,3 +53,10 @@ Root: HKLM; Subkey: "Software\Classes\.bluej"; ValueType: string; ValueName: "";
 Root: HKLM; Subkey: "Software\Classes\BlueJProject"; ValueType: string; ValueName: ""; ValueData: "BlueJ project file"; Flags: uninsdeletekey; Tasks: associations
 Root: HKLM; Subkey: "Software\Classes\BlueJProject\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\BlueJ.exe,0"; Flags: uninsdeletekey; Tasks: associations
 Root: HKLM; Subkey: "Software\Classes\BlueJProject\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\BlueJ.exe"" ""%1"""; Flags: uninsdeletekey; Tasks: associations
+
+; Active Setup runs once for every Windows user profile. This also covers users
+; created after BlueJ FRI was installed. A new BlueJ FRI release updates Version,
+; causing the idempotent command to run again for existing users as well.
+Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: ""; ValueData: "BlueJ FRI user profile initialization"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: "Version"; ValueData: "{#StringChange(MyAppVersion, '.', ',')}"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: "StubPath"; ValueData: """{cmd}"" /C if not exist ""%USERPROFILE%\bluej"" mkdir ""%USERPROFILE%\bluej"""; Flags: uninsdeletekey
