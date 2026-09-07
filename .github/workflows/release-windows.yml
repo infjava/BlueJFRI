@@ -21,8 +21,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Read versions
@@ -63,7 +63,7 @@ jobs:
           $hash = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLowerInvariant()
           "$hash  $(Split-Path $installer -Leaf)" | Set-Content -Encoding ascii $file
           "file=$file" >> $env:GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: BlueJFRI-${{ steps.version.outputs.version }}-windows
           path: |
