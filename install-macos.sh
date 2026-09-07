@@ -12,6 +12,7 @@ PROPERTIES="$BLUEJ_USER_DIR/bluej.properties"
 STATE_FILE="$BLUEJ_USER_DIR/.bluejfri-extensions"
 BEGIN_MARKER="# BEGIN BLUEJ FRI MANAGED SETTINGS"
 END_MARKER="# END BLUEJ FRI MANAGED SETTINGS"
+CHECKSTYLE_CONFIG="$EXT_DIR/default_checks.xml"
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 command -v curl >/dev/null 2>&1 || fail "curl is required"
@@ -58,7 +59,7 @@ cp "$CLEAN_PROPERTIES" "$PROPERTIES"
 if [ -s "$PROPERTIES" ]; then printf '\n' >> "$PROPERTIES"; fi
 {
     echo "$BEGIN_MARKER"
-    cat "$PROPERTIES_SOURCE"
+    awk -v checkstyle_config="$CHECKSTYLE_CONFIG" '{ gsub(/__BLUEJFRI_CHECKSTYLE_CONFIG__/, checkstyle_config); print }' "$PROPERTIES_SOURCE"
     if [ -s "$PROPERTIES_SOURCE" ] && [ "$(tail -c 1 "$PROPERTIES_SOURCE" | wc -l | tr -d ' ')" -eq 0 ]; then printf '\n'; fi
     echo "$END_MARKER"
 } >> "$PROPERTIES"
@@ -122,4 +123,5 @@ echo "BlueJ FRI configuration installed successfully."
 echo "Extensions installed: $extension_count"
 echo "Configuration:        $PROPERTIES"
 echo "Extensions directory: $EXT_DIR"
+echo "Checkstyle config:     $CHECKSTYLE_CONFIG"
 echo; echo "Restart BlueJ if it is currently running."
