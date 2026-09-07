@@ -1,5 +1,4 @@
-dst/*
-!dst/.keep
-src/*
-!src/.keep
-**/__pycache__
+/.cache/
+/dst/
+__pycache__/
+*.pyc
