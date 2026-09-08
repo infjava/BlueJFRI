@@ -1,0 +1,105 @@
+name: Publish release to WinGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: BlueJ FRI release version, e.g. 6.0.1.2
+        required: true
+        type: string
+      package_identifier:
+        description: Existing WinGet package identifier, e.g. Publisher.BlueJFRI
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Validate inputs
+        id: meta
+        shell: pwsh
+        run: |
+          $version = '${{ inputs.version }}'.Trim()
+          $packageId = '${{ inputs.package_identifier }}'.Trim()
+
+          if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+            throw "Invalid BlueJ FRI version: '$version'"
+          }
+          if ([string]::IsNullOrWhiteSpace($packageId)) {
+            throw 'WinGet package identifier must not be empty.'
+          }
+
+          $tag = "BlueJFRI-$version"
+          $asset = "BlueJFRI-$version.exe"
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "package_id=$packageId" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "asset=$asset" >> $env:GITHUB_OUTPUT
+
+      - name: Verify GitHub Release asset exists
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ steps.meta.outputs.tag }}'
+          $asset = '${{ steps.meta.outputs.asset }}'
+
+          $json = gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets,tagName | ConvertFrom-Json
+          if (-not $json) {
+            throw "Release '$tag' was not found."
+          }
+
+          $found = $json.assets | Where-Object { $_.name -eq $asset }
+          if (-not $found) {
+            throw "Release '$tag' does not contain '$asset'."
+          }
+
+          Write-Host "Verified release asset: $asset"
+
+      - name: Install .NET 8 runtime
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+          .\dotnet-install.ps1 -Runtime dotnet -Architecture x64 -Channel 8.0 -InstallDir "$env:ProgramFiles\dotnet"
+
+      - name: Download WingetCreate
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          .\wingetcreate.exe --version
+
+      - name: Submit update to WinGet
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            throw 'Repository secret WINGET_CREATE_GITHUB_TOKEN is not configured.'
+          }
+
+          $version = '${{ steps.meta.outputs.version }}'
+          $packageId = '${{ steps.meta.outputs.package_id }}'
+          $tag = '${{ steps.meta.outputs.tag }}'
+          $asset = '${{ steps.meta.outputs.asset }}'
+          $installerUrl = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag/$asset"
+
+          Write-Host "Package:   $packageId"
+          Write-Host "Version:   $version"
+          Write-Host "Installer: $installerUrl"
+
+          .\wingetcreate.exe update $packageId `
+            --urls $installerUrl `
+            --version $version `
+            --submit `
+            --no-open
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "WingetCreate failed: $LASTEXITCODE"
+          }
