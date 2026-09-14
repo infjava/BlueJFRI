@@ -59,3 +59,36 @@ Root: HKLM; Subkey: "Software\Classes\BlueJProject\shell\open\command"; ValueTyp
 Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: ""; ValueData: "BlueJ FRI user profile initialization"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: "Version"; ValueData: "{#StringChange(MyAppVersion, '.', ',')}"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: "StubPath"; ValueData: """{cmd}"" /C if not exist ""%USERPROFILE%\bluej"" mkdir ""%USERPROFILE%\bluej"""; Flags: uninsdeletekey
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  DefsFile: String;
+  Contents: AnsiString;
+  CheckstylePath: String;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    DefsFile := ExpandConstant('{app}\lib\bluej.defs');
+
+    if not LoadStringFromFile(DefsFile, Contents) then
+    begin
+      MsgBox('Could not read BlueJ configuration: ' + DefsFile, mbError, MB_OK);
+      Abort;
+    end;
+
+    { Java accepts forward slashes on Windows. Escape the drive colon because
+      the value is stored in a Java properties file. }
+    CheckstylePath := ExpandConstant('{app}\lib\checkstyle\default_checks.xml');
+    StringChangeEx(CheckstylePath, '\', '/', True);
+    StringChangeEx(CheckstylePath, ':', '\:', True);
+
+    StringChangeEx(Contents, '__BLUEJFRI_CHECKSTYLE_CONFIG__', CheckstylePath, True);
+
+    if not SaveStringToFile(DefsFile, Contents, False) then
+    begin
+      MsgBox('Could not update BlueJ configuration: ' + DefsFile, mbError, MB_OK);
+      Abort;
+    end;
+  end;
+end;
