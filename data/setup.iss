@@ -64,31 +64,33 @@ Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AF
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   DefsFile: String;
-  Contents: AnsiString;
+  RawContents: AnsiString;
+  Contents: String;
   CheckstylePath: String;
 begin
   if CurStep = ssPostInstall then
   begin
     DefsFile := ExpandConstant('{app}\lib\bluej.defs');
 
-    if not LoadStringFromFile(DefsFile, Contents) then
+    if not LoadStringFromFile(DefsFile, RawContents) then
     begin
-      MsgBox('Could not read BlueJ configuration: ' + DefsFile, mbError, MB_OK);
-      Abort;
+      Log('WARNING: Could not read BlueJ configuration: ' + DefsFile);
+      Exit;
     end;
 
-    { Java accepts forward slashes on Windows. Escape the drive colon because
-      the value is stored in a Java properties file. }
+    Contents := RawContents;
     CheckstylePath := ExpandConstant('{app}\lib\checkstyle\default_checks.xml');
     StringChangeEx(CheckstylePath, '\', '/', True);
     StringChangeEx(CheckstylePath, ':', '\:', True);
 
-    StringChangeEx(Contents, '__BLUEJFRI_CHECKSTYLE_CONFIG__', CheckstylePath, True);
+    { Replace the default Program Files path with the actual selected install path.
+      If this step fails, installation continues and the default path remains. }
+    StringChangeEx(Contents,
+      'C\:/Program Files/BlueJ FRI Edition/lib/checkstyle/default_checks.xml',
+      CheckstylePath, True);
+    RawContents := Contents;
 
-    if not SaveStringToFile(DefsFile, Contents, False) then
-    begin
-      MsgBox('Could not update BlueJ configuration: ' + DefsFile, mbError, MB_OK);
-      Abort;
-    end;
+    if not SaveStringToFile(DefsFile, RawContents, False) then
+      Log('WARNING: Could not update BlueJ configuration: ' + DefsFile);
   end;
 end;
