@@ -59,3 +59,38 @@ Root: HKLM; Subkey: "Software\Classes\BlueJProject\shell\open\command"; ValueTyp
 Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: ""; ValueData: "BlueJ FRI user profile initialization"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: "Version"; ValueData: "{#StringChange(MyAppVersion, '.', ',')}"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\Microsoft\Active Setup\Installed Components\{{31AFDAF5-4B71-47D2-A47B-50C640C77A49}"; ValueType: string; ValueName: "StubPath"; ValueData: """{cmd}"" /C if not exist ""%USERPROFILE%\bluej"" mkdir ""%USERPROFILE%\bluej"""; Flags: uninsdeletekey
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  DefsFile: String;
+  RawContents: AnsiString;
+  Contents: String;
+  CheckstylePath: String;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    DefsFile := ExpandConstant('{app}\lib\bluej.defs');
+
+    if not LoadStringFromFile(DefsFile, RawContents) then
+    begin
+      Log('WARNING: Could not read BlueJ configuration: ' + DefsFile);
+      Exit;
+    end;
+
+    Contents := RawContents;
+    CheckstylePath := ExpandConstant('{app}\lib\checkstyle\default_checks.xml');
+    StringChangeEx(CheckstylePath, '\', '/', True);
+    StringChangeEx(CheckstylePath, ':', '\:', True);
+
+    { Replace the default Program Files path with the actual selected install path.
+      If this step fails, installation continues and the default path remains. }
+    StringChangeEx(Contents,
+      'C\:/Program Files/BlueJ FRI Edition/lib/checkstyle/default_checks.xml',
+      CheckstylePath, True);
+    RawContents := Contents;
+
+    if not SaveStringToFile(DefsFile, RawContents, False) then
+      Log('WARNING: Could not update BlueJ configuration: ' + DefsFile);
+  end;
+end;
