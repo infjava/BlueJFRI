@@ -65,6 +65,21 @@ def clean_language_defs(path:Path)->int:
         out.append('bluej.language1=english:English:eng')
     path.write_text('\n'.join(out)+'\n',encoding='utf-8',newline='\n')
     return removed
+def remove_portable_user_home_defs(path:Path)->int:
+    lines=path.read_text(encoding='utf-8').splitlines()
+    out=[]; removed=0
+    for line in lines:
+        stripped=line.strip()
+        if stripped.startswith('#') or '=' not in stripped:
+            out.append(line); continue
+        key=stripped.split('=',1)[0].strip()
+        suffix=key.removeprefix('bluej.userHome')
+        if key.startswith('bluej.userHome') and (suffix=='' or suffix.isdigit()):
+            removed+=1
+            continue
+        out.append(line)
+    path.write_text('\n'.join(out)+'\n',encoding='utf-8',newline='\n')
+    return removed
 def overlay_directory(src:Path,dst:Path)->None:
     if not src.exists(): return
     if not src.is_dir(): fail(f'Expected directory: {src}')
@@ -115,6 +130,7 @@ def main()->None:
         extracted=Path(temp)/'extracted'; extracted.mkdir(); safe_extract_zip(archive,extracted); root=find_bluej_root(extracted); shutil.copytree(root,DST_BLUEJ)
     lib=DST_BLUEJ/'lib'; removed=remove_non_english_languages(lib); print(f'=== removed {len(removed)} non-English language packs')
     removed_defs=clean_language_defs(lib/'bluej.defs'); print(f'=== removed {removed_defs} non-English language entries from bluej.defs')
+    removed_user_home=remove_portable_user_home_defs(lib/'bluej.defs'); print(f'=== removed {removed_user_home} portable bluej.userHome setting(s)')
     overlay_directory(DATA/'templates',lib/'english'/'templates'); overlay_directory(DATA/'extensions2',lib/'extensions2'); overlay_directory(DATA/'checkstyle',lib/'checkstyle')
     print(f'=== downloaded {install_external_extensions(lib/"extensions2")} external extension(s)'); print(f'=== appended {append_bluej_defs(lib/"bluej.defs")} bluej.defs line(s)')
     setup=generate_setup(fri_version); print(f'Build tree prepared successfully.\nInno Setup: {setup}\nExpected installer: {DST/"output"/f"BlueJFRI-{fri_version}.exe"}')
