@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       replace_existing_release:
-        description: Replace installer/checksum assets if this FRI version already has a release
+        description: Replace installer/checksum assets only if this commit matches the release tag
         required: true
         type: boolean
         default: false
@@ -95,4 +95,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          python .github/scripts/verify_release_tag.py '${{ steps.version.outputs.tag }}' "$env:GITHUB_SHA"
+          if ($LASTEXITCODE -ne 0) { throw 'Release tag verification failed; no assets were uploaded.' }
           gh release upload '${{ steps.version.outputs.tag }}' '${{ steps.version.outputs.installer }}' '${{ steps.checksum.outputs.file }}' --repo $env:GITHUB_REPOSITORY --clobber

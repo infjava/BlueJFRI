@@ -34,7 +34,7 @@ The installer is written to `dst/output/BlueJFRI-<version>.exe`.
 
 The `Build and release Windows installer` GitHub Actions workflow is **manual only** (`workflow_dispatch`). It is never triggered by push, tag, schedule, or merge.
 
-In GitHub open **Actions → Build and release Windows installer → Run workflow**. It builds the installer on `windows-latest`, creates `SHA256SUMS.txt`, uploads a workflow artifact, and creates a `BlueJFRI-<version>` release. An existing release is not overwritten unless the manual `replace_existing_release` option is enabled.
+In GitHub open **Actions → Build and release Windows installer → Run workflow**. It builds the installer on `windows-latest`, creates `SHA256SUMS.txt`, uploads a workflow artifact, and creates a `BlueJFRI-<version>` release. An existing release is not overwritten unless the manual `replace_existing_release` option is enabled and the workflow commit matches the release tag's commit. Before replacing assets, the workflow fetches the remote tag (including annotated tags) and fails if its commit differs from `github.sha` or cannot be verified. Run from the matching tag to rebuild an existing release; use a new FRI version for a different commit.
 
 ## macOS
 
