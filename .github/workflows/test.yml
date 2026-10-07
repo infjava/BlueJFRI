@@ -13,3 +13,16 @@ jobs:
         run: python3 -m py_compile build.py
       - name: Check macOS installer syntax
         run: bash -n install-macos.sh
+
+  release-provenance:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Test release tag verification
+        run: python -m unittest discover -s tests -v
